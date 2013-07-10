@@ -45,10 +45,14 @@ var cheerioHtmlFile = function(htmlfile) {
 };
 
 var cheerioUrl = function(url) {
+    // In the interest of getting this down, try to get the file, write it locally,
+    // and continue from there.
     rest.get(url).on('complete', function(data) {
-        console.log(data);
-        return cheerio.load(data);
-    // Best guess is something is wrong in how this function is defined
+        fs.writeFileSync('temp.html', data);
+        var html = "temp.html";
+        var checkJson = checkHtmlFile(html, program.checks);
+        var outJson = JSON.stringify(checkJson, null, 4);
+        console.log(outJson);
     });
 };
 
@@ -56,13 +60,9 @@ var loadChecks = function(checksfile) {
     return JSON.parse(fs.readFileSync(checksfile));
 };
 
-var loadChecks2 = function(checksfile) {
-    return JSON.parse(fs.readFileSync(checksfile));
-};
-
 var checkUrl = function(url, checksfile) {
     $ = cheerioUrl(url);
-    console.log($);
+    /* console.log($);
     var checks2 = loadChecks2(checksfile).sort();
     var out = {};
     /*
@@ -71,6 +71,7 @@ var checkUrl = function(url, checksfile) {
         out[checks2[ii]] = present;
     }
     */
+    var out = {};
     return out;
 };
 
