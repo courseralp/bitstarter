@@ -44,7 +44,11 @@ var cheerioHtmlFile = function(htmlfile) {
     return cheerio.load(fs.readFileSync(htmlfile));
 };
 
-var cheerioUrl = function(url) {
+var loadChecks = function(checksfile) {
+    return JSON.parse(fs.readFileSync(checksfile));
+};
+
+var checkUrl = function(url, checksfile) {
     // In the interest of getting this down, try to get the file, write it locally,
     // and continue from there.
     rest.get(url).on('complete', function(data) {
@@ -56,28 +60,8 @@ var cheerioUrl = function(url) {
     });
 };
 
-var loadChecks = function(checksfile) {
-    return JSON.parse(fs.readFileSync(checksfile));
-};
-
-var checkUrl = function(url, checksfile) {
-    $ = cheerioUrl(url);
-    /* console.log($);
-    var checks2 = loadChecks2(checksfile).sort();
-    var out = {};
-    /*
-    for(var ii in checks2) {
-        var present = $(checks2[ii]).length > 0;
-        out[checks2[ii]] = present;
-    }
-    */
-    var out = {};
-    return out;
-};
-
 var checkHtmlFile = function(htmlfile, checksfile) {
     $ = cheerioHtmlFile(htmlfile);
-    console.log($);
     var checks = loadChecks(checksfile).sort();
     var out = {};
     for(var ii in checks) {
@@ -100,14 +84,20 @@ if(require.main == module) {
         .option('-u  --url <url>', 'URL')
         .parse(process.argv);
     // The logic here is going to assume url OR file.  If both specified, use url
-    if (program.url) {
+    if (program.url!=undefined) {
         var checkJson = checkUrl(program.url, program.checks);
     }
-    else if (program.file) {
+    else if (program.file!=undefined) {
     	var checkJson = checkHtmlFile(program.file, program.checks);
+        var outJson = JSON.stringify(checkJson, null, 4);
+        console.log(outJson);
+    } else {
+        console.log ("No URL or file specified, exiting");
+        process.exit(1);
     }
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
+    // var outJson = JSON.stringify(checkJson, null, 4);
+    // console.log(outJson);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
+    exports.checkUrl = checkUrl;
 }
