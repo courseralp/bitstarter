@@ -47,8 +47,9 @@ var cheerioHtmlFile = function(htmlfile) {
 var cheerioUrl = function(url) {
     rest.get(url).on('complete', function(data) {
         console.log(data);
-        var tempData = cheerio.load(data);
-        return tempData;
+        return cheerio.load(data);
+        // var tempData = cheerio.load(data);
+        // return tempData;
     });
 };
 
