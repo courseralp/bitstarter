@@ -48,8 +48,7 @@ var cheerioUrl = function(url) {
     rest.get(url).on('complete', function(data) {
         console.log(data);
         return cheerio.load(data);
-        // var tempData = cheerio.load(data);
-        // return tempData;
+    // Best guess is something is wrong in how this function is defined
     });
 };
 
@@ -57,27 +56,33 @@ var loadChecks = function(checksfile) {
     return JSON.parse(fs.readFileSync(checksfile));
 };
 
-var checkHtmlFile = function(htmlfile, checksfile) {
-    $ = cheerioHtmlFile(htmlfile);
-    var checks = loadChecks(checksfile).sort();
-    var out = {};
-    for(var ii in checks) {
-        var present = $(checks[ii]).length > 0;
-        out[checks[ii]] = present;
-    }
-    return out;
+var loadChecks2 = function(checksfile) {
+    return JSON.parse(fs.readFileSync(checksfile));
 };
 
 var checkUrl = function(url, checksfile) {
     $ = cheerioUrl(url);
-    var checks = loadChecks(checksfile).sort();
+    console.log($);
+    var checks2 = loadChecks2(checksfile).sort();
     var out = {};
     /*
+    for(var ii in checks2) {
+        var present = $(checks2[ii]).length > 0;
+        out[checks2[ii]] = present;
+    }
+    */
+    return out;
+};
+
+var checkHtmlFile = function(htmlfile, checksfile) {
+    $ = cheerioHtmlFile(htmlfile);
+    console.log($);
+    var checks = loadChecks(checksfile).sort();
+    var out = {};
     for(var ii in checks) {
         var present = $(checks[ii]).length > 0;
         out[checks[ii]] = present;
     }
-    */
     return out;
 };
 
@@ -93,12 +98,11 @@ if(require.main == module) {
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-u  --url <url>', 'URL')
         .parse(process.argv);
+    // The logic here is going to assume url OR file.  If both specified, use url
     if (program.url) {
         var checkJson = checkUrl(program.url, program.checks);
     }
-    else 
-    // The logic here is going to assume file OR url.  If both specified, treat as just file
-    if (program.file) {
+    else if (program.file) {
     	var checkJson = checkHtmlFile(program.file, program.checks);
     }
     var outJson = JSON.stringify(checkJson, null, 4);
